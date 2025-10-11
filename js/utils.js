@@ -381,6 +381,29 @@ class Utils {
     }
 
     /**
+     * Create sparkles effect around an element
+     * @param {HTMLElement} element
+     */
+    static createSparkles(element) {
+        const rect = element.getBoundingClientRect();
+        const originX = rect.left + rect.width / 2 + window.scrollX;
+        const originY = rect.top + rect.height / 2 + window.scrollY;
+        const count = 10;
+        for (let i = 0; i < count; i++) {
+            const s = document.createElement('div');
+            s.className = 'sparkle';
+            s.style.left = originX + 'px';
+            s.style.top = originY + 'px';
+            const dx = (Math.random() - 0.5) * 120;
+            const dy = (Math.random() - 0.5) * 120;
+            s.style.setProperty('--dx', dx + 'px');
+            s.style.setProperty('--dy', dy + 'px');
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 800);
+        }
+    }
+
+    /**
      * Escape HTML special characters
      * @param {string} text - Text to escape
      * @returns {string} Escaped text

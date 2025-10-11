@@ -3,179 +3,1241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizMaster - Interactive Quiz Platform</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/auth.css">
+    <title>Progress Tracker - Interactive Assessment Platform</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --purple: #a855f7;
+            --cyan: #06b6d4;
+            --orange: #f97316;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(20deg); }
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+        }
+
+        .btn-copy {
+            background: linear-gradient(135deg, var(--cyan), var(--primary));
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 450px;
+            width: 90%;
+            animation: zoomIn 0.4s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: slideInUp 0.4s ease;
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 25px;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            animation: slideInLeft 0.6s ease;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.6s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05));
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Quiz Cards */
+        .quiz-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .quiz-card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease backwards;
+        }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--purple));
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .quiz-card:nth-child(1) { animation-delay: 0.1s; }
+        .quiz-card:nth-child(2) { animation-delay: 0.2s; }
+        .quiz-card:nth-child(3) { animation-delay: 0.3s; }
+        .quiz-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .quiz-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .quiz-description {
+            color: #64748b;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .quiz-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .icon {
+            margin-right: 5px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 25px 0;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--purple));
+            background-size: 200% 100%;
+            animation: progressShine 2s linear infinite;
+            transition: width 0.5s ease;
+        }
+
+        @keyframes progressShine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        #progressText {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Question Styles */
+        .question-container {
+            animation: questionSlide 0.5s ease;
+        }
+
+        @keyframes questionSlide {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 20px 25px;
+            border: 3px solid #e2e8f0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            transition: width 0.3s ease;
+        }
+
+        .option:hover::before {
+            width: 100%;
+        }
+
+        .option:hover {
+            border-color: var(--primary);
+            transform: translateX(10px);
+        }
+
+        .option.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+            transform: translateX(15px) scale(1.02);
+        }
+
+        .option.correct {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .option.incorrect {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        /* Results */
+        .results-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .score {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 30px 0;
+            animation: scoreReveal 0.8s ease;
+        }
+
+        @keyframes scoreReveal {
+            from { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: left;
+            animation: feedbackSlide 0.5s ease;
+        }
+
+        @keyframes feedbackSlide {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .feedback.correct {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 5px solid var(--success);
+        }
+
+        .feedback.incorrect {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 5px solid var(--danger);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: notificationSlide 0.5s ease;
+            z-index: 2000;
+        }
+
+        @keyframes notificationSlide {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success {
+            border-left: 5px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 5px solid var(--danger);
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, white, transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkleFly 0.8s ease-out forwards;
+        }
+
+        @keyframes sparkleFly {
+            to {
+                transform: translate(var(--dx), var(--dy)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .quiz-list {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Pre-Login Section -->
+    <div id="preLogin" class="container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <div class="logo">✨ Progress Tracker</div>
+                    <div class="tagline">🚀 Track your learning journey</div>
+                </div>
+                <div class="auth-buttons">
+                    <button class="btn btn-outline" onclick="openModal('login')">🔐 Login</button>
+                    <button class="btn btn-primary" onclick="openModal('register')">🎯 Register</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <h2 style="margin-bottom: 30px; font-size: 2rem;">🌟 Welcome to Progress Tracker</h2>
+            <div class="quiz-list">
+                <div class="quiz-card">
+                    <div class="quiz-title">📝 Create Assessments</div>
+                    <div class="quiz-description">Design custom quizzes with multiple choice questions in minutes</div>
+                </div>
+                <div class="quiz-card">
+                    <div class="quiz-title">🎓 Take Assessments</div>
+                    <div class="quiz-description">Enjoy smooth animations and instant feedback</div>
+                </div>
+                <div class="quiz-card">
+                    <div class="quiz-title">📊 Track Results</div>
+                    <div class="quiz-description">Monitor your progress with detailed analytics</div>
+                </div>
+                <div class="quiz-card">
+                    <div class="quiz-title">🔗 Share Links</div>
+                    <div class="quiz-description">Share assessments via unique links with anyone</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Auth Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <div class="auth-container">
-                <div class="auth-tabs">
-                    <button class="auth-tab active" data-tab="login">Login</button>
-                    <button class="auth-tab" data-tab="register">Register</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <div id="loginForm" class="auth-form active">
+                <h3 style="margin-bottom: 20px;">👋 Welcome Back!</h3>
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="📧 Email" required>
                 </div>
-                
-                <div id="loginForm" class="auth-form active">
-                    <h3>Welcome Back!</h3>
-                    <div class="form-group">
-                        <input type="email" id="loginEmail" placeholder="Email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="loginPassword" placeholder="Password" required>
-                    </div>
-                    <button id="loginBtn" class="btn btn-primary">Login</button>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="🔒 Password" required>
                 </div>
-                
-                <div id="registerForm" class="auth-form">
-                    <h3>Create Account</h3>
-                    <div class="form-group">
-                        <input type="text" id="registerName" placeholder="Full Name" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="registerEmail" placeholder="Email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="registerPassword" placeholder="Password" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
-                    </div>
-                    <button id="registerBtn" class="btn btn-primary">Register</button>
+                <button class="btn btn-primary" style="width: 100%;" onclick="handleLogin()">Login</button>
+            </div>
+
+            <div id="registerForm" class="auth-form">
+                <h3 style="margin-bottom: 20px;">🎉 Create Account</h3>
+                <div class="form-group">
+                    <input type="text" id="registerName" placeholder="👤 Full Name" required>
                 </div>
+                <div class="form-group">
+                    <input type="email" id="registerEmail" placeholder="📧 Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="registerPassword" placeholder="🔒 Password" required>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="handleRegister()">Register</button>
             </div>
         </div>
     </div>
 
     <!-- Main App -->
-    <div id="app" class="hidden">
-        <div class="container">
-            <header>
-                <div class="header-content">
-                    <div class="logo">QuizMaster</div>
-                    <div class="tagline">Test your knowledge with interactive quizzes</div>
-                    <div class="user-menu">
-                        <span id="userName">Guest</span>
-                        <button id="logoutBtn" class="btn btn-outline">Logout</button>
-                    </div>
+    <div id="app" class="hidden container">
+        <header>
+            <div class="header-content">
+                <div>
+                    <div class="logo">✨ Progress Tracker</div>
+                    <div class="tagline">🚀 Your learning companion</div>
                 </div>
-            </header>
-            
-            <div class="main-content">
-                <div class="sidebar">
-                    <h3>Navigation</h3>
-                    <div class="card">
-                        <button id="browseQuizzesBtn" class="btn">Browse Quizzes</button>
-                        <button id="createQuizBtn" class="btn" style="margin-top: 10px;">Create Quiz</button>
-                        <button id="myResultsBtn" class="btn" style="margin-top: 10px;">My Results</button>
-                    </div>
-                    
-                    <div class="card">
-                        <h4>Quick Stats</h4>
-                        <p>Quizzes Available: <span id="quizCount">5</span></p>
-                        <p>Questions Answered: <span id="questionsAnswered">0</span></p>
-                        <p>Average Score: <span id="averageScore">0%</span></p>
-                    </div>
-                </div>
-                
-                <div class="content">
-                    <!-- Browse Quizzes View -->
-                    <div id="browseQuizzesView" class="tab-content">
-                        <h2>Available Quizzes</h2>
-                        <p>Select a quiz to test your knowledge:</p>
-                        
-                        <div class="quiz-list" id="quizList">
-                            <!-- Quizzes will be dynamically loaded here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Create Quiz View -->
-                    <div id="createQuizView" class="tab-content hidden">
-                        <h2>Create Your Own Quiz</h2>
-                        
-                        <div class="form-group">
-                            <label for="quizTitle">Quiz Title</label>
-                            <input type="text" id="quizTitle" placeholder="Enter quiz title">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="quizDescription">Quiz Description</label>
-                            <textarea id="quizDescription" rows="3" placeholder="Enter quiz description"></textarea>
-                        </div>
-                        
-                        <div id="questionsContainer">
-                            <!-- Questions will be added here dynamically -->
-                        </div>
-                        
-                        <button id="addQuestionBtn" class="btn">Add Question</button>
-                        <button id="saveQuizBtn" class="btn btn-success" style="margin-left: 10px;">Save Quiz</button>
-                    </div>
-                    
-                    <!-- Quiz Taking View -->
-                    <div id="quizView" class="tab-content hidden">
-                        <h2 id="currentQuizTitle">Quiz Title</h2>
-                        <p id="currentQuizDescription">Quiz Description</p>
-                        
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress" id="quizProgress"></div>
-                            </div>
-                            <div id="progressText">Question <span id="currentQuestionNumber">1</span> of <span id="totalQuestions">5</span></div>
-                        </div>
-                        
-                        <div class="question-container">
-                            <div class="question-text" id="questionText">Question text will appear here</div>
-                            <div class="options-container" id="optionsContainer">
-                                <!-- Options will be dynamically loaded here -->
-                            </div>
-                        </div>
-                        
-                        <div class="navigation">
-                            <button id="prevQuestionBtn" class="btn">Previous</button>
-                            <button id="nextQuestionBtn" class="btn">Next</button>
-                            <button id="submitQuizBtn" class="btn btn-success hidden">Submit Quiz</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Results View -->
-                    <div id="resultsView" class="tab-content hidden">
-                        <div class="results-container">
-                            <h2>Quiz Results</h2>
-                            <div class="score" id="finalScore">0%</div>
-                            <p>You answered <span id="correctAnswers">0</span> out of <span id="totalQuestionsResult">0</span> questions correctly.</p>
-                            
-                            <div id="questionReview">
-                                <!-- Question review will be dynamically loaded here -->
-                            </div>
-                            
-                            <button id="retakeQuizBtn" class="btn">Retake Quiz</button>
-                            <button id="backToQuizzesBtn" class="btn" style="margin-left: 10px;">Back to Quizzes</button>
-                        </div>
-                    </div>
-                    
-                    <!-- My Results View -->
-                    <div id="myResultsView" class="tab-content hidden">
-                        <h2>My Quiz Results</h2>
-                        <p>Here are your previous quiz attempts:</p>
-                        
-                        <div id="resultsList">
-                            <!-- Results will be dynamically loaded here -->
-                        </div>
-                    </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userName" style="font-weight: 600;">Guest</span>
+                    <button class="btn btn-outline" onclick="handleLogout()">🚪 Logout</button>
                 </div>
             </div>
-            
-            <footer>
-                <p>QuizMaster &copy; 2025 - Interactive Quiz Platform</p>
-            </footer>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <h3 style="margin-bottom: 20px;">📍 Navigation</h3>
+                <div class="card">
+                    <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="showView('browse')">📚 Browse Assessments</button>
+                    <button class="btn btn-success" style="width: 100%; margin-bottom: 10px;" onclick="showView('create')">➕ Create Assessment</button>
+                    <button class="btn btn-outline" style="width: 100%;" onclick="showView('results')">📊 My Results</button>
+                </div>
+
+                <div class="card">
+                    <h4 style="margin-bottom: 15px;">📈 Quick Stats</h4>
+                    <p>🎯 Assessments: <strong id="quizCount">0</strong></p>
+                    <p>✅ Questions Answered: <strong id="questionsAnswered">0</strong></p>
+                    <p>⭐ Average Score: <strong id="averageScore">0%</strong></p>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Browse View -->
+                <div id="browseView" class="view">
+                    <h2 style="margin-bottom: 10px;">📚 Available Assessments</h2>
+                    <p style="color: #64748b; margin-bottom: 25px;">Select an assessment to begin</p>
+                    <div class="quiz-list" id="quizList"></div>
+                </div>
+
+                <!-- Create View -->
+                <div id="createView" class="view hidden">
+                    <h2 style="margin-bottom: 25px;">➕ Create New Assessment</h2>
+                    <div class="form-group">
+                        <label>📝 Assessment Title</label>
+                        <input type="text" id="quizTitle" placeholder="Enter title">
+                    </div>
+                    <div class="form-group">
+                        <label>📄 Description</label>
+                        <input type="text" id="quizDescription" placeholder="Enter description">
+                    </div>
+                    <div id="questionsContainer"></div>
+                    <button class="btn btn-primary" onclick="addQuestion()">➕ Add Question</button>
+                    <button class="btn btn-success" style="margin-left: 10px;" onclick="saveQuiz()">💾 Save Assessment</button>
+                </div>
+
+                <!-- Quiz View -->
+                <div id="quizView" class="view hidden">
+                    <h2 id="currentQuizTitle">Assessment Title</h2>
+                    <p id="currentQuizDescription" style="color: #64748b; margin-bottom: 25px;">Description</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress" id="quizProgress"></div>
+                        </div>
+                        <div id="progressText">Question 1 of 5</div>
+                    </div>
+
+                    <div class="question-container">
+                        <div class="question-text" id="questionText"></div>
+                        <div class="options-container" id="optionsContainer"></div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                        <button class="btn btn-outline" onclick="previousQuestion()">⬅️ Previous</button>
+                        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next ➡️</button>
+                        <button class="btn btn-success hidden" id="submitBtn" onclick="submitQuiz()">🎯 Submit</button>
+                    </div>
+                </div>
+
+                <!-- Results View -->
+                <div id="resultsView" class="view hidden">
+                    <div class="results-container">
+                        <h2>🏆 Assessment Results</h2>
+                        <div class="score" id="finalScore">0%</div>
+                        <p style="font-size: 1.2rem; margin-bottom: 30px;">
+                            You scored <strong id="correctAnswers">0</strong> out of <strong id="totalQuestionsResult">0</strong>
+                        </p>
+                        <div id="questionReview"></div>
+                        <button class="btn btn-primary" onclick="retakeQuiz()">🔄 Retake</button>
+                        <button class="btn btn-outline" style="margin-left: 10px;" onclick="showView('browse')">📚 Browse Assessments</button>
+                    </div>
+                </div>
+
+                <!-- My Results View -->
+                <div id="myResultsView" class="view hidden">
+                    <h2 style="margin-bottom: 25px;">📊 My Assessment Results</h2>
+                    <div id="resultsList"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="data/sample-quizzes.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/quiz.js"></script>
-    <script src="js/app.js"></script>
+    <script>
+        let currentUser = null;
+        let users = {};
+        let quizzes = [
+            {
+                id: 1,
+                title: "JavaScript Basics",
+                description: "Test your JavaScript fundamentals",
+                questions: [
+                    {
+                        question: "What is the correct way to declare a variable?",
+                        options: ["var x = 5", "variable x = 5", "v x = 5", "int x = 5"],
+                        correct: 0
+                    },
+                    {
+                        question: "Which method converts JSON to object?",
+                        options: ["JSON.parse()", "JSON.stringify()", "JSON.convert()", "JSON.toObject()"],
+                        correct: 0
+                    }
+                ],
+                createdBy: "system"
+            }
+        ];
+        let currentQuiz = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let allResults = {};
+
+        function createSparkles(e) {
+            for (let i = 0; i < 5; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = e.clientX + 'px';
+                sparkle.style.top = e.clientY + 'px';
+                sparkle.style.setProperty('--dx', (Math.random() - 0.5) * 100 + 'px');
+                sparkle.style.setProperty('--dy', (Math.random() - 0.5) * 100 + 'px');
+                document.body.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 800);
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn')) {
+                createSparkles(e);
+            }
+        });
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function openModal(tab) {
+            document.getElementById('authModal').classList.add('active');
+            switchAuthTab(tab);
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Form').classList.add('active');
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            if (!name || !email || !password) {
+                showNotification('Please fill all fields', 'error');
+                return;
+            }
+
+            if (users[email]) {
+                showNotification('Email already registered', 'error');
+                return;
+            }
+
+            users[email] = { name, email, password, results: [] };
+            showNotification('✅ Registration successful!', 'success');
+            setTimeout(() => {
+                closeModal();
+                openModal('login');
+            }, 1000);
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showNotification('Please fill all fields', 'error');
+                return;
+            }
+
+            const user = users[email];
+            if (!user || user.password !== password) {
+                showNotification('Invalid credentials', 'error');
+                return;
+            }
+
+            currentUser = user;
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            
+            document.getElementById('preLogin').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            closeModal();
+            
+            showNotification('🎉 Welcome back, ' + user.name + '!', 'success');
+            loadQuizzes();
+            updateStats();
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('preLogin').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+            showNotification('👋 Logged out successfully', 'success');
+        }
+
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            
+            if (viewName === 'browse') {
+                document.getElementById('browseView').classList.remove('hidden');
+                loadQuizzes();
+            } else if (viewName === 'create') {
+                document.getElementById('createView').classList.remove('hidden');
+            } else if (viewName === 'results') {
+                document.getElementById('myResultsView').classList.remove('hidden');
+                loadMyResults();
+            }
+        }
+
+        function loadQuizzes() {
+            const quizList = document.getElementById('quizList');
+            quizList.innerHTML = '';
+            
+            quizzes.forEach((quiz, index) => {
+                const card = document.createElement('div');
+                card.className = 'quiz-card';
+                card.style.animationDelay = (index * 0.1) + 's';
+                card.innerHTML = `
+                    <div class="quiz-title">${quiz.title}</div>
+                    <div class="quiz-description">${quiz.description}</div>
+                    <div class="quiz-meta">
+                        <span>📝 ${quiz.questions.length} questions</span>
+                        <span>👤 ${quiz.createdBy}</span>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="startQuiz(${quiz.id})">▶️ Start</button>
+                        <button class="btn btn-copy" onclick="copyQuizLink(${quiz.id}, event)">🔗 Copy Link</button>
+                    </div>
+                `;
+                quizList.appendChild(card);
+            });
+
+            document.getElementById('quizCount').textContent = quizzes.length;
+        }
+
+        function copyQuizLink(quizId, event) {
+            event.stopPropagation();
+            const link = window.location.href.split('?')[0] + '?quiz=' + quizId;
+            
+            navigator.clipboard.writeText(link).then(() => {
+                showNotification('🔗 Link copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy link', 'error');
+            });
+        }
+
+        function startQuiz(quizId) {
+            const quiz = quizzes.find(q => q.id === quizId);
+            if (!quiz) return;
+
+            currentQuiz = quiz;
+            currentQuestionIndex = 0;
+            userAnswers = new Array(quiz.questions.length).fill(null);
+
+            document.getElementById('currentQuizTitle').textContent = quiz.title;
+            document.getElementById('currentQuizDescription').textContent = quiz.description;
+            
+            showView('quiz');
+            document.getElementById('browseView').classList.add('hidden');
+            document.getElementById('quizView').classList.remove('hidden');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = currentQuiz.questions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                if (userAnswers[currentQuestionIndex] === index) {
+                    optionDiv.classList.add('selected');
+                }
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+
+            updateProgress();
+            updateNavigationButtons();
+        }
+
+        function selectOption(index) {
+            userAnswers[currentQuestionIndex] = index;
+            loadQuestion();
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / currentQuiz.questions.length) * 100;
+            document.getElementById('quizProgress').style.width = progress + '%';
+            document.getElementById('progressText').innerHTML = 
+                `Question <strong>${currentQuestionIndex + 1}</strong> of <strong>${currentQuiz.questions.length}</strong>`;
+        }
+
+        function updateNavigationButtons() {
+            const isLastQuestion = currentQuestionIndex === currentQuiz.questions.length - 1;
+            document.getElementById('nextBtn').classList.toggle('hidden', isLastQuestion);
+            document.getElementById('submitBtn').classList.toggle('hidden', !isLastQuestion);
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < currentQuiz.questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        function submitQuiz() {
+            let correct = 0;
+            currentQuiz.questions.forEach((question, index) => {
+                if (userAnswers[index] === question.correct) {
+                    correct++;
+                }
+            });
+
+            const score = Math.round((correct / currentQuiz.questions.length) * 100);
+            
+            if (currentUser) {
+                if (!currentUser.results) currentUser.results = [];
+                currentUser.results.push({
+                    quizId: currentQuiz.id,
+                    quizTitle: currentQuiz.title,
+                    score: score,
+                    correct: correct,
+                    total: currentQuiz.questions.length,
+                    date: new Date().toLocaleDateString()
+                });
+            }
+
+            showResults(correct, score);
+        }
+
+        function showResults(correct, score) {
+            document.getElementById('quizView').classList.add('hidden');
+            document.getElementById('resultsView').classList.remove('hidden');
+            
+            document.getElementById('finalScore').textContent = score + '%';
+            document.getElementById('correctAnswers').textContent = correct;
+            document.getElementById('totalQuestionsResult').textContent = currentQuiz.questions.length;
+
+            const reviewContainer = document.getElementById('questionReview');
+            reviewContainer.innerHTML = '';
+
+            currentQuiz.questions.forEach((question, index) => {
+                const isCorrect = userAnswers[index] === question.correct;
+                const feedback = document.createElement('div');
+                feedback.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+                feedback.innerHTML = `
+                    <strong>Q${index + 1}: ${question.question}</strong><br>
+                    Your answer: ${question.options[userAnswers[index]] || 'Not answered'}<br>
+                    ${!isCorrect ? 'Correct answer: ' + question.options[question.correct] : '✅ Correct!'}
+                `;
+                reviewContainer.appendChild(feedback);
+            });
+
+            updateStats();
+        }
+
+        function retakeQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers = new Array(currentQuiz.questions.length).fill(null);
+            document.getElementById('resultsView').classList.add('hidden');
+            document.getElementById('quizView').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadMyResults() {
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+
+            if (!currentUser || !currentUser.results || currentUser.results.length === 0) {
+                resultsList.innerHTML = '<p style="text-align: center; color: #64748b;">No results yet. Take an assessment to see your progress!</p>';
+                return;
+            }
+
+            currentUser.results.forEach(result => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${result.quizTitle}</h3>
+                    <p>📊 Score: <strong style="font-size: 1.5rem; color: var(--primary);">${result.score}%</strong></p>
+                    <p>✅ ${result.correct} out of ${result.total} correct</p>
+                    <p>📅 ${result.date}</p>
+                `;
+                resultsList.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            if (!currentUser || !currentUser.results) return;
+
+            const totalQuestions = currentUser.results.reduce((sum, r) => sum + r.total, 0);
+            const avgScore = currentUser.results.length > 0
+                ? Math.round(currentUser.results.reduce((sum, r) => sum + r.score, 0) / currentUser.results.length)
+                : 0;
+
+            document.getElementById('questionsAnswered').textContent = totalQuestions;
+            document.getElementById('averageScore').textContent = avgScore + '%';
+        }
+
+        function addQuestion() {
+            const container = document.getElementById('questionsContainer');
+            const questionNum = container.children.length + 1;
+            
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'card';
+            questionDiv.style.animation = 'fadeInUp 0.5s ease';
+            questionDiv.innerHTML = `
+                <h4>❓ Question ${questionNum}</h4>
+                <div class="form-group">
+                    <input type="text" class="question-input" placeholder="Enter question">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="option-input" placeholder="Option 1">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="option-input" placeholder="Option 2">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="option-input" placeholder="Option 3">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="option-input" placeholder="Option 4">
+                </div>
+                <div class="form-group">
+                    <label>✅ Correct Answer (0-3):</label>
+                    <input type="number" class="correct-input" min="0" max="3" value="0">
+                </div>
+                <button class="btn btn-outline" onclick="this.parentElement.remove()">🗑️ Remove</button>
+            `;
+            container.appendChild(questionDiv);
+        }
+
+        function saveQuiz() {
+            const title = document.getElementById('quizTitle').value;
+            const description = document.getElementById('quizDescription').value;
+            
+            if (!title || !description) {
+                showNotification('Please enter title and description', 'error');
+                return;
+            }
+
+            const questionDivs = document.querySelectorAll('#questionsContainer .card');
+            if (questionDivs.length === 0) {
+                showNotification('Please add at least one question', 'error');
+                return;
+            }
+
+            const questions = [];
+            questionDivs.forEach(div => {
+                const questionText = div.querySelector('.question-input').value;
+                const options = Array.from(div.querySelectorAll('.option-input')).map(input => input.value);
+                const correct = parseInt(div.querySelector('.correct-input').value);
+
+                if (questionText && options.every(o => o)) {
+                    questions.push({ question: questionText, options, correct });
+                }
+            });
+
+            if (questions.length === 0) {
+                showNotification('Please fill all question fields', 'error');
+                return;
+            }
+
+            const newQuiz = {
+                id: quizzes.length + 1,
+                title,
+                description,
+                questions,
+                createdBy: currentUser ? currentUser.name : 'Anonymous'
+            };
+
+            quizzes.push(newQuiz);
+            showNotification('🎉 Assessment created successfully!', 'success');
+            
+            document.getElementById('quizTitle').value = '';
+            document.getElementById('quizDescription').value = '';
+            document.getElementById('questionsContainer').innerHTML = '';
+            
+            showView('browse');
+        }
+
+        // Check for shared quiz link
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const quizId = urlParams.get('quiz');
+            
+            if (quizId) {
+                const quiz = quizzes.find(q => q.id === parseInt(quizId));
+                if (quiz) {
+                    showNotification('📬 Quiz loaded from shared link!', 'success');
+                }
+            }
+        });
+
+        // Initialize
+        loadQuizzes();
+    </script>
 </body>
 </html>

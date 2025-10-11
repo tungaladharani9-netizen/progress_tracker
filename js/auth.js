@@ -2,13 +2,33 @@
 class AuthManager {
     constructor() {
         this.currentUser = null;
-        this.users = JSON.parse(localStorage.getItem('quizmaster_users')) || [];
         this.init();
     }
 
     init() {
         this.setupEventListeners();
         this.checkExistingSession();
+        // Open modal buttons
+        const openLoginBtn = document.getElementById('openLoginBtn');
+        const openRegisterBtn = document.getElementById('openRegisterBtn');
+        if (openLoginBtn) {
+            openLoginBtn.addEventListener('click', () => {
+                this.showAuthModal();
+                // Switch to login tab
+                const loginTab = document.querySelector('.auth-tab[data-tab="login"]');
+                if (loginTab) this.switchAuthTab(loginTab);
+                Utils.createSparkles(openLoginBtn);
+            });
+        }
+        if (openRegisterBtn) {
+            openRegisterBtn.addEventListener('click', () => {
+                this.showAuthModal();
+                // Switch to register tab
+                const registerTab = document.querySelector('.auth-tab[data-tab="register"]');
+                if (registerTab) this.switchAuthTab(registerTab);
+                Utils.createSparkles(openRegisterBtn);
+            });
+        }
     }
 
     setupEventListeners() {
@@ -42,64 +62,78 @@ class AuthManager {
         document.getElementById(tab.dataset.tab + 'Form').classList.add('active');
     }
 
-    login() {
-        const email = document.getElementById('loginEmail').value;
+    async login() {
+        const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
+        const btn = document.getElementById('loginBtn');
 
         if (!email || !password) {
             Utils.showNotification('Please fill in all fields', 'error');
             return;
         }
 
-        const user = this.users.find(u => u.email === email && u.password === password);
-        
-        if (user) {
-            this.currentUser = user;
-            localStorage.setItem('quizmaster_current_user', JSON.stringify(user));
+        try {
+            Utils.setButtonLoading(btn, 'Logging in...');
+            const res = await fetch('api/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Login failed');
+            }
+            this.currentUser = data.user;
+            localStorage.setItem('quizmaster_current_user', JSON.stringify(data.user));
             this.hideAuthModal();
-            Utils.showNotification(`Welcome back, ${user.name}!`, 'success');
-        } else {
-            Utils.showNotification('Invalid email or password', 'error');
+            Utils.showNotification(`Welcome back, ${data.user.name}!`, 'success');
+        } catch (err) {
+            Utils.showNotification(err.message || 'Check your email/password', 'error');
+        } finally {
+            Utils.removeButtonLoading(btn);
         }
     }
 
-    register() {
-        const name = document.getElementById('registerName').value;
-        const email = document.getElementById('registerEmail').value;
+    async register() {
+        const name = document.getElementById('registerName').value.trim();
+        const email = document.getElementById('registerEmail').value.trim();
         const password = document.getElementById('registerPassword').value;
         const confirmPassword = document.getElementById('registerConfirmPassword').value;
+        const btn = document.getElementById('registerBtn');
 
         if (!name || !email || !password || !confirmPassword) {
             Utils.showNotification('Please fill in all fields', 'error');
             return;
         }
-
         if (password !== confirmPassword) {
             Utils.showNotification('Passwords do not match', 'error');
             return;
         }
-
-        if (this.users.find(u => u.email === email)) {
-            Utils.showNotification('Email already registered', 'error');
+        if (!Utils.validateEmail(email)) {
+            Utils.showNotification('Enter a valid email address', 'error');
             return;
         }
 
-        const newUser = {
-            id: Utils.generateId(),
-            name,
-            email,
-            password,
-            joinedDate: new Date().toISOString()
-        };
-
-        this.users.push(newUser);
-        localStorage.setItem('quizmaster_users', JSON.stringify(this.users));
-        
-        this.currentUser = newUser;
-        localStorage.setItem('quizmaster_current_user', JSON.stringify(newUser));
-        
-        this.hideAuthModal();
-        Utils.showNotification('Account created successfully!', 'success');
+        try {
+            Utils.setButtonLoading(btn, 'Creating account...');
+            const res = await fetch('api/register.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Registration failed');
+            }
+            this.currentUser = data.user;
+            localStorage.setItem('quizmaster_current_user', JSON.stringify(data.user));
+            this.hideAuthModal();
+            Utils.showNotification('Account created successfully!', 'success');
+        } catch (err) {
+            Utils.showNotification(err.message || 'Registration failed', 'error');
+        } finally {
+            Utils.removeButtonLoading(btn);
+        }
     }
 
     logout() {
@@ -112,11 +146,15 @@ class AuthManager {
     showAuthModal() {
         document.getElementById('authModal').style.display = 'flex';
         document.getElementById('app').classList.add('hidden');
+        const pre = document.getElementById('preLogin');
+        if (pre) pre.classList.remove('hidden');
     }
 
     hideAuthModal() {
         document.getElementById('authModal').style.display = 'none';
         document.getElementById('app').classList.remove('hidden');
+        const pre = document.getElementById('preLogin');
+        if (pre) pre.classList.add('hidden');
         this.updateUI();
     }
 
