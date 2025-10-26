@@ -660,8 +660,8 @@
     <div id="authModal" class="modal">
         <div class="modal-content">
             <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
-                <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+                <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">Register</button>
             </div>
 
             <div id="loginForm" class="auth-form active">
@@ -862,9 +862,15 @@
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tab + 'Form').classList.add('active');
+
+            const btn = document.querySelector(`.auth-tab[data-tab="${tab}"]`);
+            if (btn) {
+                btn.classList.add('active');
+            }
+            const form = document.getElementById(tab + 'Form');
+            if (form) {
+                form.classList.add('active');
+            }
         }
 
         function handleRegister() {
@@ -877,17 +883,26 @@
                 return;
             }
 
-            if (users[email]) {
-                showNotification('Email already registered', 'error');
-                return;
-            }
-
-            users[email] = { name, email, password, results: [] };
-            showNotification('✅ Registration successful!', 'success');
-            setTimeout(() => {
-                closeModal();
-                openModal('login');
-            }, 1000);
+            (async () => {
+                try {
+                    const res = await fetch('api/register.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Registration failed');
+                    }
+                    showNotification('✅ Registration successful!', 'success');
+                    setTimeout(() => {
+                        closeModal();
+                        openModal('login');
+                    }, 1000);
+                } catch (e) {
+                    showNotification(e.message || 'Registration failed', 'error');
+                }
+            })();
         }
 
         function handleLogin() {
@@ -899,23 +914,31 @@
                 return;
             }
 
-            const user = users[email];
-            if (!user || user.password !== password) {
-                showNotification('Invalid credentials', 'error');
-                return;
-            }
-
-            currentUser = user;
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
-            
-            document.getElementById('preLogin').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            closeModal();
-            
-            showNotification('🎉 Welcome back, ' + user.name + '!', 'success');
-            loadQuizzes();
-            updateStats();
+            (async () => {
+                try {
+                    const res = await fetch('api/login.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Invalid credentials');
+                    }
+                    const user = data.user;
+                    currentUser = { name: user.name, email: user.email, results: [] };
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+                    document.getElementById('preLogin').classList.add('hidden');
+                    document.getElementById('app').classList.remove('hidden');
+                    closeModal();
+                    showNotification('🎉 Welcome back, ' + user.name + '!', 'success');
+                    loadQuizzes();
+                    updateStats();
+                } catch (e) {
+                    showNotification(e.message || 'Invalid credentials', 'error');
+                }
+            })();
         }
 
         function handleLogout() {

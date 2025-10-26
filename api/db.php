@@ -12,6 +12,8 @@ if ($mysqli->connect_error) {
     die(json_encode(['success' => false, 'message' => 'Database connection failed']));
 }
 
+$mysqli->set_charset('utf8mb4');
+
 // Ensure database exists
 $mysqli->query("CREATE DATABASE IF NOT EXISTS `$DB_NAME` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 $mysqli->select_db($DB_NAME);
